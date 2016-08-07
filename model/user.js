@@ -27,10 +27,6 @@ const User = new mongoose.Schema({
 });
 // mongoose 'methods' are instance methods
 User.methods.hashPasswordSync = function() {
-  // var salt = bcrypt.genSaltSync(8);
-  // // Hash the password with the salt
-  // console.log('password',this);
-  // return bcrypt.hashSync(this.basic.password, 8);
   return bcrypt.hashSync(this.basic.password, 8);
 };
 User.methods.hashPasswordAsync = function(){
@@ -45,7 +41,7 @@ User.methods.hashPasswordAsync = function(){
 };
 
 User.methods.comparePassword = function(password) {
-  return bcrypt.compareSync(password, this.password);
+  return bcrypt.compareSync(password, this.basic.password);
 };
 
 User.methods.generateToken = function() {

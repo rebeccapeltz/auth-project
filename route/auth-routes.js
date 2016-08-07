@@ -45,9 +45,9 @@ router.post('/signup', jsonParser, (req, res, next) => {
   newUser.basic.email = req.body.email;
   newUser.username = req.body.username || req.body.email;
   newUser.basic.password = req.body.password;
-  newUser.role = req.body.role ? req.body.role: 'basic';
-  var promise = newUser.hashPasswordAsync();
-  promise.then((hashedPassword) => {
+  newUser.role = req.body.role ? req.body.role : 'basic';
+
+  newUser.hashPasswordAsync().then((hashedPassword) => {
     newUser.basic.password = hashedPassword;
     req.body.password = null; //set password to null
     console.log('newUser', newUser);
@@ -58,7 +58,7 @@ router.post('/signup', jsonParser, (req, res, next) => {
       newUser.save((err, user) => {
         //Mongoose: mpromise (mongoose's default promise library) is deprecated, plug in your own promise library instead: http://mongoosejs.com/docs/promises.html
         if (err) {
-          console.log('err user:',user)
+          //console.log('err user:', user)
           return next(new Error('could not create user' + req.body.username));
         }
         res.json({
@@ -86,7 +86,7 @@ router.get('/signin', basicHTTP, (req, res, next) => {
   });
 });
 
-router.get('/users', jsonParser, jwtAuth, authzn,(req, res, next) => {
+router.get('/users', jsonParser, jwtAuth, authzn, (req, res, next) => {
   User.find({}, (err, users) => {
     if (err) return next(new Error('problem finding users'));
     res.json({
