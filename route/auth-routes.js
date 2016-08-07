@@ -7,6 +7,7 @@ const User = require('../model/user');
 const basicHTTP = require('../lib/basic_http');
 const jwtAuth = require('../lib/jwt-auth');
 const authzn = require('../lib/authorization');
+const errorHandler = require('../lib/error-handler');
 
 const router = module.exports = exports = express.Router();
 
@@ -21,7 +22,6 @@ router.post('/signupSync', jsonParser, (req, res, next) => {
   let hashedPassword = newUser.hashPasswordSync();
   newUser.basic.password = hashedPassword;
   req.body.password = null; //set password to null
-  console.log('newUser', newUser);
   User.findOne({
     username: req.body.username
   }, (err, user) => {
@@ -29,7 +29,6 @@ router.post('/signupSync', jsonParser, (req, res, next) => {
     newUser.save((err, user) => {
       //Mongoose: mpromise (mongoose's default promise library) is deprecated, plug in your own promise library instead: http://mongoosejs.com/docs/promises.html
       if (err) {
-        console.log(err);
         return next(new Error('could not create user' + req.body.username));
 
       }
@@ -50,7 +49,7 @@ router.post('/signup', jsonParser, (req, res, next) => {
   newUser.hashPasswordAsync().then((hashedPassword) => {
     newUser.basic.password = hashedPassword;
     req.body.password = null; //set password to null
-    console.log('newUser', newUser);
+    //console.log('newUser', newUser);
     User.findOne({
       username: req.body.username
     }, (err, user) => {
@@ -78,8 +77,10 @@ router.get('/signin', basicHTTP, (req, res, next) => {
   User.findOne({
     username: req.auth.username
   }, (err, user) => {
-    if (err || !user) return next(new Error('could not sign in - user does not exist'));
-    if (!user.comparePassword(req.auth.password)) return next(new Error('could not sign in - password not valid'));
+    //if (err || !user) return next(new Error('could not sign in - user does not exist'));
+    if (err || !user) return errorHandler(401, next)(new Error('user does not exist'));
+    //if (!user.comparePassword(req.auth.password)) return next(new Error('could not sign in - password not valid'));
+    if (!user.comparePassword(req.auth.password)) errorHandler(401,next)(new Error('password invalid'));
     res.json({
       token: user.generateToken()
     });

@@ -6,13 +6,18 @@ const expect = chai.expect;
 process.env.APP_SECRET = 'test';
 const mongoose = require('mongoose');
 const User = require('../model/user');
-//const jwt_auth = require('../lib/jwt_auth');
+let testDebug = require('debug')('cfdemo:test');
+const jwtAuth = require('../lib/jwt-auth');
 
 //const User = require('../models/user');
 const app = require('../server');
+app.get('/api/jwt_auth', jwtAuth, function(req, res) {
+
+  res.json({msg: 'success!'});
+});
 process.env.DB_SERVER = 'mongodb://localhost/test_db';
 
-describe('authentication', function() {
+describe('Authentication tests:', function() {
   let server;
   let url;
   let port = 3003;
@@ -73,7 +78,7 @@ describe('authentication', function() {
           expect(err).to.eql(null);
           expect(res.body).to.have.property('token');
           expect(res.body.token.length).to.not.equal(0);
-          console.log('token', this.token)
+          //testDebug('token', this.token)
           done();
         });
     });
@@ -83,30 +88,33 @@ describe('authentication', function() {
         .get('/signin')
         .auth('bad', 'credentials')
         .end((err, res) => {
-          expect(err.message).to.eql('Unauthorized');
+          expect(err).to.not.eql(null);
+          expect(res).to.have.status(401);
+          expect(res.error.text).to.eql('"user does not exist"');//need the extra double quote
+          expect(res.body).to.eql('user does not exist');
           done();
         });
     });
-    //
-    // it('should authenticate with a token', function(done) {
-    //   chai.request(baseUrl)
-    //     .get('/jwt_auth')
-    //     .set('Authorization', 'Bearer ' + this.tokenData.token)
-    //     .end((err, res) => {
-    //       expect(err).to.eql(null);
-    //       expect(res.body.msg).to.eql('success!');
-    //       done();
-    //     });
-    // });
-    //
-    // it('should not authenticate without a token', function(done) {
-    //   chai.request(baseUrl)
-    //     .get('/jwt_auth')
-    //     .end((err, res) => {
-    //       expect(err.message).to.eql('Unauthorized');
-    //       expect(res).to.have.status(401);
-    //       done();
-    //     });
-    // });
+
+    it('should authenticate with a token', function(done) {
+      chai.request(url)
+        .get('/jwt_auth')
+        .set('Authorization', 'Bearer ' + this.token)
+        .end((err, res) => {
+          expect(err).to.eql(null);
+          expect(res.body.msg).to.eql('success!');
+          done();
+        });
+    });
+
+    it('should not authenticate without a token', function(done) {
+      chai.request(url)
+        .get('/jwt_auth')
+        .end((err, res) => {
+          expect(err.message).to.eql('Unauthorized');
+          expect(res).to.have.status(401);
+          done();
+        });
+    });
   });
 });
