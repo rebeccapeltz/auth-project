@@ -80,7 +80,7 @@ router.get('/signin', basicHTTP, (req, res, next) => {
     //if (err || !user) return next(new Error('could not sign in - user does not exist'));
     if (err || !user) return errorHandler(401, next)(new Error('user does not exist'));
     //if (!user.comparePassword(req.auth.password)) return next(new Error('could not sign in - password not valid'));
-    if (!user.comparePassword(req.auth.password)) errorHandler(401,next)(new Error('password invalid'));
+    if (!user.comparePassword(req.auth.password)) return errorHandler(401,next)(new Error('password invalid'));
     res.json({
       token: user.generateToken()
     });

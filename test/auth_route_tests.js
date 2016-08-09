@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const User = require('../model/user');
 let testDebug = require('debug')('cfdemo:test');
 const jwtAuth = require('../lib/jwt-auth');
+const app = require('../server');
 
 mongoose.Promise = global.Promise;
 
@@ -16,8 +17,6 @@ process.on('exit', (code) => {
   mongoose.connection.db.dropDatabase(() => console.log('db dropped'));
 });
 
-//const User = require('../models/user');
-const app = require('../server');
 app.get('/api/jwt_auth', jwtAuth, function(req, res) {
   res.json({
     msg: 'success!'
