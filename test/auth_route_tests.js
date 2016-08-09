@@ -9,11 +9,19 @@ const User = require('../model/user');
 let testDebug = require('debug')('cfdemo:test');
 const jwtAuth = require('../lib/jwt-auth');
 
+mongoose.Promise = global.Promise;
+
+process.on('exit', (code) => {
+  testDebug('exit code', code);
+  mongoose.connection.db.dropDatabase(() => console.log('db dropped'));
+});
+
 //const User = require('../models/user');
 const app = require('../server');
 app.get('/api/jwt_auth', jwtAuth, function(req, res) {
-
-  res.json({msg: 'success!'});
+  res.json({
+    msg: 'success!'
+  });
 });
 process.env.DB_SERVER = 'mongodb://localhost/test_db';
 
@@ -90,7 +98,7 @@ describe('Authentication tests:', function() {
         .end((err, res) => {
           expect(err).to.not.eql(null);
           expect(res).to.have.status(401);
-          expect(res.error.text).to.eql('"user does not exist"');//need the extra double quote
+          expect(res.error.text).to.eql('"user does not exist"'); //need the extra double quote
           expect(res.body).to.eql('user does not exist');
           done();
         });

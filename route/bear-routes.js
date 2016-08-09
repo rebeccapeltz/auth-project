@@ -2,7 +2,7 @@
 
 const Bear = require('../model/bear');
 const jsonParser = require('body-parser').json();
-const jwt_auth = require('../lib/jwt-token');
+const jwt_auth = require('../lib/jwt-auth');
 const authzn = require('../lib/authorization');
 let bearRouter = module.exports = exports = require('express').Router();
 
